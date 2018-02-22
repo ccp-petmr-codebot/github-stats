@@ -9,27 +9,37 @@ Arguments:
   <repo>  : `user/repository` or `org/repository`
 
 Options:
-  -l USER, --login USER  : `user` or `user:TOKEN` for private API login.
-      Will look for $GITHUB_API_TOKEN if no token specified
+  -l TOKEN, --login TOKEN  : `user:TOKEN`|`TOKEN` for private API login.
+      Will look for $GITHUB_API_TOKEN if not specified
   -u URL, --url URL  : default:
-      https://{LOGIN}api.github.com/repos/{REPO}/traffic/clones?per=day
+      https://api.github.com/repos/{REPO}/traffic/clones?per=day
   -o OUT, --output OUT  : output file
       re.sub(r'\W', '_', <repo>).FMT will be (re)written to disk
   --decrement  : subtract one from "-{DATE_TODAY}" (note the prefix '-')
   --log LVL  : logging level [default: INFO]
 """
 from __future__ import print_function
-import urllib
 from argopt import argopt
 import re
 from os import getenv
 import json
 from time import strftime
 import logging
+try:
+    from urllib.request import Request, urlopen
+except ImportError:
+    from urllib2 import Request, urlopen
+from base64 import b64encode
 __author__ = "Casper da Costa-Luis <imaging@caspersci.uk.to>"
 
 
 RE_NW = re.compile(r"\W+")
+
+
+def urlread_auth(url, login):
+    request = Request(url)
+    request.add_header('Authorization', b'Basic ' + b64encode(login.encode()))
+    return urlopen(request).read().decode()
 
 
 def cleanTime(time):
@@ -46,16 +56,12 @@ def countMap(data, key=None):
 def run(args):
     log = logging.getLogger(__name__)
     eg_link = args.url or \
-        "https://{LOGIN}api.github.com/repos/{REPO}/traffic/clones?per=day"
+        "https://api.github.com/repos/{REPO}/traffic/clones?per=day"
 
-    login = args.login or ""
-    if login:
-        if ':' not in login:
-            login += ':' + getenv("GITHUB_API_TOKEN")
-        login += '@'
+    login = args.login or getenv("GITHUB_API_TOKEN")
     log.debug("url:" + eg_link)
 
-    eg_link = eg_link.format(REPO=args.repo, LOGIN=login)
+    eg_link = eg_link.format(REPO=args.repo)
     eg_out = args.output or RE_NW.sub('_', args.repo) + ".json"
     log.info("output:" + eg_out)
 
@@ -67,8 +73,7 @@ def run(args):
         data = {}
 
     # update with new data
-    opener = urllib.FancyURLopener()
-    newData = countMap(json.load(opener.open(eg_link)))
+    newData = countMap(json.loads(urlread_auth(eg_link, login)))
     log.debug(newData)
     data.setdefault(args.repo, {})
     data[args.repo].update(newData)
@@ -83,6 +88,7 @@ def run(args):
         json.dump(data, fd)
 
     log.debug(data[args.repo])
+    log.info("decrements:%d" % sum(i for i in data[args.repo].values() if i < 0))
     log.info("total:%d" % sum(data[args.repo].values()))
 
 
