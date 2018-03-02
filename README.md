@@ -41,3 +41,5 @@ $ git clone https://github.com/CCPPETMR/github-stats --branch CCPPETMR/SIRF-Supe
 $ cd github-stats
 $ ./clones.py CCPPETMR/SIRF-SuperBuild
 ```
+
+or simply run `./summary.py`

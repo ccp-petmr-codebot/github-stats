@@ -35,6 +35,7 @@ gh_stats_count(){
     git fetch
     git reset --hard origin/$TRAVIS_REPO_SLUG
     ${PY_EXE:-python} clones.py "${@}" $TRAVIS_REPO_SLUG
+    ${PY_EXE:-python} summary.py  # update total
     git commit -am "update $TRAVIS_JOB_NUMBER"
     git push && break
   done
