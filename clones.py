@@ -15,7 +15,8 @@ Options:
       https://api.github.com/repos/{REPO}/traffic/clones?per=day
   -o OUT, --output OUT  : output file
       re.sub(r'\W', '_', <repo>).FMT will be (re)written to disk
-  --decrement  : subtract one from "-{DATE_TODAY}" (note the prefix '-')
+  -p P, --decrement-prefix P  : [default: -]
+  --decrement  : subtract one from "P{DATE_TODAY}" (note the prefix 'P')
   --log LVL  : logging level [default: INFO]
 """
 from __future__ import print_function
@@ -79,7 +80,7 @@ def run(args):
     data[args.repo].update(newData)
 
     if args.decrement:
-        now = strftime("-%Y%m%d")
+        now = strftime(args.decrement_prefix + "%Y%m%d")
         data[args.repo].setdefault(now, 0)
         data[args.repo][now] -= 1
 
@@ -88,7 +89,14 @@ def run(args):
         json.dump(data, fd)
 
     log.debug(data[args.repo])
-    log.info("decrements:%d" % sum(i for i in data[args.repo].values() if i < 0))
+    if args.decrement:
+        log.info("decrements:%s:%d" % (
+            args.decrement_prefix,
+            sum(v for (k, v) in data[args.repo].items()
+                if k.startswith(args.decrement_prefix))))
+    else:
+        log.info("decrements:ALL:%d" % sum(v for v in data[args.repo].values()
+                                           if v < 0))
     log.info("total:%d" % sum(data[args.repo].values()))
 
 
