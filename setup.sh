@@ -30,11 +30,12 @@ ${PY_EXE:-python} -m pip install --user -U -r requirements.txt
 popd
 
 clone_count_decrement(){
+  PRE="${1:--}"
   pushd "$GITHUB_STATS"
   while [ 1 ]; do
     git fetch
     git reset --hard origin/$TRAVIS_REPO_SLUG
-    ${PY_EXE:-python} clones.py --decrement $TRAVIS_REPO_SLUG
+    ${PY_EXE:-python} clones.py --decrement -p "$PRE" $TRAVIS_REPO_SLUG
     git commit -am "update $TRAVIS_JOB_NUMBER"
     git push && break
   done
