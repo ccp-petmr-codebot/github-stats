@@ -39,5 +39,5 @@ To view statistics, run `./clones.py $TRAVIS_REPO_SLUG`, for example:
 ```bash
 $ git clone https://github.com/CCPPETMR/github-stats --branch CCPPETMR/SIRF-SuperBuild
 $ cd github-stats
-$ ./clones.py CCPPETMR/SIRF-SuperBuild -o clones.json
+$ ./clones.py CCPPETMR/SIRF-SuperBuild
 ```

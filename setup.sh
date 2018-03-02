@@ -34,7 +34,7 @@ clone_count_decrement(){
   while [ 1 ]; do
     git fetch
     git reset --hard origin/$TRAVIS_REPO_SLUG
-    ${PY_EXE:-python} clones.py --decrement -o clones.json $TRAVIS_REPO_SLUG
+    ${PY_EXE:-python} clones.py --decrement $TRAVIS_REPO_SLUG
     git commit -am "update $TRAVIS_JOB_NUMBER"
     git push && break
   done
