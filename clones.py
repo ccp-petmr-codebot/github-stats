@@ -27,20 +27,36 @@ import json
 from time import strftime
 import logging
 try:
-    from urllib.request import Request, urlopen
+    from urllib.request import Request, urlopen, quote
 except ImportError:
-    from urllib2 import Request, urlopen
+    from urllib2 import Request, urlopen, quote
 from base64 import b64encode
 __author__ = "Casper da Costa-Luis <imaging@caspersci.uk.to>"
 
 
 RE_NW = re.compile(r"\W+")
+JSON_OPTS = dict(indent=0, separators=",:", sort_keys=True)
 
 
-def urlread_auth(url, login):
+def urlread_auth(url, login=None, decode=True):
     request = Request(url)
-    request.add_header('Authorization', b'Basic ' + b64encode(login.encode()))
-    return urlopen(request).read().decode()
+    if login:
+        request.add_header('Authorization',
+                           b'Basic ' + b64encode(login.encode()))
+    res = urlopen(request).read()
+    return res.decode() if decode else res
+
+
+def logo64(url):
+    return quote(b64encode(urlread_auth(url, decode=False)))
+
+
+def csd(x):
+  """Comma separate digit"""
+  # return ''.join(reversed([x + (',' if i and not i % 3 else '')
+  #                for (i, x) in enumerate(reversed(str(hits)))]))
+  from re import sub
+  return sub(r"(\d)(?=(\d{3})+(?!\d))", r"\1,", str(x))
 
 
 def cleanTime(time):
@@ -86,7 +102,7 @@ def run(args):
 
     # overwrite disk
     with open(eg_out, "w") as fd:
-        json.dump(data, fd)
+        json.dump(data, fd, **JSON_OPTS)
 
     log.debug(data[args.repo])
     if args.decrement:
