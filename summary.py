@@ -25,6 +25,7 @@ def main():
 
     # (all clones) - (travis clones) - (travis docker pulls)
     clones = sum(data[REPO_SLUG].values())
+    clones -= 1540  # hardcode offset
     print("under estimate:", clones)
 
     # all docker pulls
