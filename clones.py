@@ -9,15 +9,16 @@ Arguments:
   <repo>  : `user/repository` or `org/repository`
 
 Options:
-  -l TOKEN, --login TOKEN  : `user:TOKEN`|`TOKEN` for private API login.
+  -l TOKEN, --login TOKEN     : `user:TOKEN`|`TOKEN` for private API login.
       Will look for $GITHUB_API_TOKEN if not specified
-  -u URL, --url URL  : default:
+  -u URL, --url URL           : default:
       https://api.github.com/repos/{REPO}/traffic/clones?per=day
-  -o OUT, --output OUT  : output file
+  -o OUT, --output OUT        : output file
       re.sub(r'\W', '_', <repo>).FMT will be (re)written to disk
+  -k K, --key K  : [default: count]|uniques for total clones/unique cloners
   -p P, --decrement-prefix P  : [default: -]
-  --decrement  : subtract one from "P{DATE_TODAY}" (note the prefix 'P')
-  --log LVL  : logging level [default: INFO]
+  --decrement    : subtract one from "P{DATE_TODAY}" (note the prefix 'P')
+  --log LVL      : logging level [default: INFO]
 """
 from __future__ import print_function
 from argopt import argopt
@@ -64,9 +65,10 @@ def cleanTime(time):
     return time[:len("2018-02-22")].replace('-', '')
 
 
-def countMap(data, key=None):
+def countMap(data, key=None, subkey="count"):
     """convert github API dictionary to desired dictionary"""
-    res = dict((cleanTime(d["timestamp"]), d["count"]) for d in data["clones"])
+    res = dict((cleanTime(d["timestamp"]), d[subkey])
+               for d in data["clones"])
     return {key: res} if key else res
 
 
@@ -79,7 +81,8 @@ def run(args):
     log.debug("url:" + eg_link)
 
     eg_link = eg_link.format(REPO=args.repo)
-    eg_out = args.output or RE_NW.sub('_', args.repo) + ".json"
+    repo_w = RE_NW.sub('_', args.repo)
+    eg_out = args.output or repo_w + ".json"
     log.info("output:" + eg_out)
 
     # load disk data
@@ -90,30 +93,35 @@ def run(args):
         data = {}
 
     # update with new data
-    newData = countMap(json.loads(urlread_auth(eg_link, login)))
+    newData = countMap(json.loads(urlread_auth(eg_link, login)),
+                       subkey=args.key)
     log.debug(newData)
-    data.setdefault(args.repo, {})
-    data[args.repo].update(newData)
+    data.setdefault(repo_w, {})
+    data[repo_w].setdefault(args.key, {})
+    d = data[repo_w][args.key]  # convenience pointer
+    d.update(newData)
+
+    # assume one extra clone to decrease for today
+    d[strftime("run%Y%m%d")] = -1
 
     if args.decrement:
         now = strftime(args.decrement_prefix + "%Y%m%d")
-        data[args.repo].setdefault(now, 0)
-        data[args.repo][now] -= 1
+        d.setdefault(now, 0)
+        d[now] -= 1
 
     # overwrite disk
     with open(eg_out, "w") as fd:
         json.dump(data, fd, **JSON_OPTS)
 
-    log.debug(data[args.repo])
+    log.debug(d)
     if args.decrement:
         log.info("decrements:%s:%d" % (
             args.decrement_prefix,
-            sum(v for (k, v) in data[args.repo].items()
+            sum(v for (k, v) in d.items()
                 if k.startswith(args.decrement_prefix))))
     else:
-        log.info("decrements:ALL:%d" % sum(v for v in data[args.repo].values()
-                                           if v < 0))
-    log.info("total:%d" % sum(data[args.repo].values()))
+        log.info("decrements:ALL:%d" % sum(v for v in d.values() if v < 0))
+    log.info("total:%d" % sum(d.values()))
 
 
 def main():
