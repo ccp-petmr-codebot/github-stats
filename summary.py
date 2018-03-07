@@ -8,7 +8,8 @@ __author__ = "Casper da Costa-Luis <imaging@caspersci.uk.to>"
 REPO_SLUG = "CCPPETMR/SIRF-SuperBuild"
 DOCKER_SLUG = "ccppetmr/sirf"
 
-DB = RE_NW.sub('_', REPO_SLUG) + ".json"
+REPO_W = RE_NW.sub('_', REPO_SLUG)
+DB = REPO_W + ".json"
 BADGE_LOGO = "https://avatars2.githubusercontent.com/u/16674841?s=32&amp;v=4"
 BADGE_URL = "https://img.shields.io/badge/"
 JSON_BADGE_URL = "https://img.shields.io/badge/dynamic/json.svg"
@@ -23,19 +24,26 @@ def main():
     with open(DB) as fd:
         data = json.load(fd)
 
-    # (all clones) - (travis clones) - (travis docker pulls)
-    clones = sum(data[REPO_SLUG].values())
-    clones -= 1540  # hardcode offset
+    # daily: `all clones` - `travis clones` - `travis docker pulls`
+    # d = data[REPO_W]["count"]
+
+    # daily: `all cloners` - 0 or 1 (travis user) - `travis docker pulls`
+    d = data[REPO_W]["uniques"]
+
+    clones = sum(d.values())
+    # clones -= 1540  # hardcode offset
     print("under estimate:", clones)
 
     # all docker pulls
     docker_pulls = json.loads(urlread_auth(DOCKER_STATS_URL))["pull_count"]
     print("gross docker pulls:", docker_pulls)
+    d["docker"] = docker_pulls
 
     # drupal counts from www.ccppetmr.ac.uk
     vm_downloads = 0
     # TODO: vm_downloads = json.loads(urlread_auth(VM_STATS_URL))["download_count"]
     print("VM downloads:", vm_downloads)
+    d["vm"] = vm_downloads
 
     # best estimate of all installs
     installs = clones + docker_pulls + vm_downloads
@@ -53,8 +61,10 @@ def main():
             BADGE_URL, csd(installs), logo))
 
         # dynamic badge
-        print("%s?label=installs&uri=%s&query=total&colorB=8000f0&%s" % (
-              JSON_BADGE_URL, quote(JSON_URI), logo))
+        print("%s?label=installs&uri=%s&query=%s&colorB=8000f0&%s" % (
+              JSON_BADGE_URL, quote(JSON_URI),
+              "total",  # REPO_W + ".uniques.*"
+              logo))
 
 
 if __name__ == "__main__":
