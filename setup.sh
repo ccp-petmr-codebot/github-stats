@@ -9,7 +9,7 @@
 # Usage:
 # In e.g. `.travis.yml`:
 # # for counting clones, excluding ours
-# - git clone https://$GITHUB_API_TOKEN@github.com/CCPPETMR/github-stats \
+# - git clone https://$GITHUB_API_TOKEN@github.com/SynerBI/github-stats \
 #     --branch $TRAVIS_REPO_SLUG
 # # update with last fortnight's clones from GitHub API
 # - source github-stats/setup.sh

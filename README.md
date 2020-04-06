@@ -15,7 +15,7 @@ In e.g. `.travis.yml`:
 
 ```yml
 # for counting clones, excluding ours
-- git clone https://$GITHUB_API_TOKEN@github.com/CCPPETMR/github-stats \
+- git clone https://$GITHUB_API_TOKEN@github.com/SynerBI/github-stats \
     --branch $TRAVIS_REPO_SLUG
 # update with last fortnight's clones from GitHub API
 - source github-stats/setup.sh
@@ -37,7 +37,7 @@ In e.g. `.travis.yml`:
 To view statistics, run `./clones.py $TRAVIS_REPO_SLUG`, for example:
 
 ```bash
-$ git clone https://github.com/CCPPETMR/github-stats --branch CCPPETMR/SIRF-SuperBuild
+$ git clone https://github.com/SynerBI/github-stats --branch CCPPETMR/SIRF-SuperBuild
 $ cd github-stats
 $ ./clones.py CCPPETMR/SIRF-SuperBuild
 ```

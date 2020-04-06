@@ -5,15 +5,15 @@ from clones import urlread_auth, logo64, quote, csd, RE_NW, JSON_OPTS
 import sys
 __author__ = "Casper da Costa-Luis <imaging@caspersci.uk.to>"
 
-REPO_SLUG = "CCPPETMR/SIRF-SuperBuild"
-DOCKER_SLUG = "ccppetmr/sirf"
+REPO_SLUG = "SynerBI/SIRF-SuperBuild"
+DOCKER_SLUG = "synerbi/sirf"
 
 REPO_W = RE_NW.sub('_', REPO_SLUG)
 DB = REPO_W + ".json"
 BADGE_LOGO = "https://avatars2.githubusercontent.com/u/16674841?s=32&amp;v=4"
 BADGE_URL = "https://img.shields.io/badge/"
 JSON_BADGE_URL = "https://img.shields.io/badge/dynamic/json.svg"
-JSON_URI = "https://raw.githubusercontent.com/CCPPETMR/github-stats/" + \
+JSON_URI = "https://raw.githubusercontent.com/SynerBI/github-stats/" + \
     REPO_SLUG + '/' + DB
 DOCKER_STATS_URL = "https://hub.docker.com/v2/repositories/" + DOCKER_SLUG
 VM_STATS_URL = None  # TODO
@@ -39,7 +39,7 @@ def main():
     print("gross docker pulls:", docker_pulls)
     d["docker"] = docker_pulls
 
-    # drupal counts from www.ccppetmr.ac.uk
+    # drupal counts from www.ccpsynerbi.ac.uk
     vm_downloads = 0
     # TODO: vm_downloads = json.loads(urlread_auth(VM_STATS_URL))["download_count"]
     print("VM downloads:", vm_downloads)
