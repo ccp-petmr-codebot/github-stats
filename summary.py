@@ -5,7 +5,7 @@ from clones import urlread_auth, logo64, quote, csd, RE_NW, JSON_OPTS
 import sys
 __author__ = "Casper da Costa-Luis <imaging@caspersci.uk.to>"
 
-REPO_SLUG = "SynerBI/SIRF-SuperBuild"
+REPO_SLUG = "SyneRBI/SIRF-SuperBuild"
 DOCKER_SLUG = "synerbi/sirf"
 
 REPO_W = RE_NW.sub('_', REPO_SLUG)
